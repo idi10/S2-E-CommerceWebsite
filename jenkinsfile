@@ -13,22 +13,6 @@ pipeline {
 		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
     
     stages {
-        stage('Setup parameters') {
-                steps {
-                    script { 
-                        properties([
-                            parameters([
-				                string(
-                                    defaultValue: 'dev',
-                                    name: 'branch',
-                                    trim: true
-                            ),
-			    
-                            ])
-                        ])
-                    }
-                }
-           } 
 
         stage('cloning') {
             steps {
