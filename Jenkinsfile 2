@@ -95,8 +95,13 @@ pipeline {
                   volumes:
                    - /home/app
                   restart: always
-                 EOF
-              curl ifconfig.co
+              EOF
+              docker-compose up -d
+              sleep 10
+              docker ps
+              port= 1121
+              IP addr= $(curl ifconfig.co)
+              echo "The e-commerce application is available at $IP addr:$port
                  '''
             }
         }
