@@ -24,16 +24,25 @@ pipeline {
                   ''' 
             }
         } 
-                stage('SonarQube analysis') {
-                    docker {
-                         image 'sonarsource/sonar-scanner-cli:4.7.0'
-                        }
-                    steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh "./gradlew sonarqube"
+        stage('SonarQube analysis') {
+           agent {
+                docker {
+                 
+                  image 'sonarsource/sonar-scanner-cli:4.7.0'
+                }
+               }
+                   environment {
+            CI = 'true'
+            //  scannerHome = tool 'Sonar'
+            scannerHome='/opt/sonar-scanner'
+        }
+                steps{
+                    withSonarQubeEnv('Sonar') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
                 }
             }
-        }
+
         stage("Quality gate") {
             steps {
                 waitForQualityGate abortPipeline: true
