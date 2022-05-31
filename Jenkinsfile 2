@@ -83,6 +83,7 @@ pipeline {
                 cd $WORKSPACE/S2-E-CommerceWebsite/
                 docker build -t devopseasylearning2021/idrissa:e-commerce-${BUILD-NUMBER} .
                 cd -
+                '''
             }
         }
 
@@ -101,6 +102,7 @@ pipeline {
                    - /home/app
                   restart: always
                  EOF
+                 '''
             }
         }
     }
