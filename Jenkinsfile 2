@@ -22,11 +22,7 @@ pipeline {
                                 string(
                                     defaultValue: 'dev', 
                                     name: 'branch',
-                                ),
-
-    
-                                
-			    
+                                ), 
                             ])
                         ])
                     }
@@ -79,7 +75,6 @@ pipeline {
             
             steps {
                 sh '''
-                cd $WORKSPACE/S2-E-CommerceWebsite/
                 docker build -t devopseasylearning2021/idrissa:e-commerce-${BUILD-NUMBER} .
                 cd -
                 '''
