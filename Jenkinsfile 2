@@ -96,6 +96,7 @@ pipeline {
                    - /home/app
                   restart: always
                  EOF
+              curl ifconfig.co
                  '''
             }
         }
