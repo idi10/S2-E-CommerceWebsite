@@ -19,7 +19,7 @@ pipeline {
             steps {
                 sh '''
                   rm -rf $WORKSPACE/*
-                  git clone --branch $branch https://github.com/idi10/S2-E-CommerceWebsite.git
+                  git clone --branch dev https://github.com/idi10/S2-E-CommerceWebsite.git
                   cd S2-E-CommerceWebsite
                   ''' 
             }
