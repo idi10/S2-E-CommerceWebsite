@@ -85,7 +85,7 @@ pipeline {
             
             steps {
               sh'''
-              cat <<EOF >docker-compose.yml
+              cat <<EOF > docker-compose.yml
               version: '3.3'
               services:
                   nginx:
