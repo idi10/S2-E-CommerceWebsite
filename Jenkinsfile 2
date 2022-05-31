@@ -89,13 +89,15 @@ pipeline {
               version: '3.0'
               services:
                   nginx:
-                    image: devopseasylearning2021/idrissa:e-commerce-${BUILD-NUMBER}
-                    container_name: e-commerce_ik
-                    ports:
-                      - 1121:80
-                    volumes:
-                      - /home/app
-                    restart: always
+                     image: devopseasylearning2021/idrissa:e-commerce-${BUILD-NUMBER}
+                     container_name: e-commerce_ik
+                     ports:
+                         - 1121:80
+                     volumes:
+                         - /home/app
+                     restart: always
+
+
               EOF
               cat docker-compose.yml
               docker-compose up -d
@@ -103,6 +105,7 @@ pipeline {
               docker ps
               port= 1121
               IP addr= $(curl ifconfig.co)
+
               echo "The e-commerce application is available at $IP addr:$port
                  '''
             }
