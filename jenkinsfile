@@ -19,12 +19,28 @@ pipeline {
             steps {
                 sh '''
                   rm -rf $WORKSPACE/*
-                  git clone --branch dev https://github.com/idi10/S2-E-CommerceWebsite.git
+                  git clone --branch $branch https://github.com/idi10/S2-E-CommerceWebsite.git
                   cd S2-E-CommerceWebsite
                   ''' 
             }
-        }      
+        } 
+                stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh "./gradlew sonarqube"
+                }
+            }
+        }
+        stage("Quality gate") {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }    
+
+
        
+
+
     }
 
 
