@@ -1,0 +1,127 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+        timeout (time: 60, unit: 'MINUTES')
+        timestamps()
+      }
+      
+      
+          environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+    
+    stages {
+        stage('Setup parameters') {
+                steps {
+                    script { 
+                        properties([
+                            parameters([
+    
+                                string(
+                                    defaultValue: 'dev', 
+                                    name: 'branch',
+                                ),
+
+    
+                                
+			    
+                            ])
+                        ])
+                    }
+                }
+           }
+
+        stage('cloning') {
+            steps {
+                sh '''
+                  rm -rf $WORKSPACE/*
+                  git clone --branch dev https://github.com/idi10/S2-E-CommerceWebsite.git
+                  cd S2-E-CommerceWebsite
+                  ''' 
+            }
+        } 
+        
+        
+        stage('SonarQube analysis') {
+           agent {
+                docker {
+                 
+                  image 'sonarsource/sonar-scanner-cli:4.7.0'
+                }
+               }
+                   environment {
+            CI = 'true'
+            //  scannerHome = tool 'Sonar'
+            scannerHome='/opt/sonar-scanner'
+        }
+                steps{
+                    withSonarQubeEnv('Sonar') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+
+        stage("Quality gate") {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }     
+
+        stage('Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+        
+        stage('building') {
+            
+            steps {
+                sh '''
+                cd $WORKSPACE/S2-E-CommerceWebsite/
+                docker build -t devopseasylearning2021/idrissa:e-commerce-${BUILD-NUMBER} .
+                cd -
+            }
+        }
+
+        stage('deploying with docker-compose') {
+            
+            steps {
+              sh'''
+              cat <<EOF >docker-compose.yml
+              version: '3.3'
+              services:
+                  nginx:
+                  container_name: e-commerce_ik
+                  ports:
+                    - 1121:80
+                  volumes:
+                   - /home/app
+                  restart: always
+                 EOF
+            }
+        }
+    }
+post {
+   
+   success {
+      slackSend (channel: '#development-alerts', color: 'good', message: "SUCCESSFUL:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+
+ 
+    unstable {
+      slackSend (channel: '#development-alerts', color: 'warning', message: "UNSTABLE:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+
+    failure {
+      slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE:  Branch name  <<${env.BRANCH_NAME}>> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+   
+    cleanup {
+      deleteDir()
+    }
+  }
+
+}
