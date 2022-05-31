@@ -25,7 +25,10 @@ pipeline {
             }
         } 
                 stage('SonarQube analysis') {
-            steps {
+                    docker {
+                         image 'sonarsource/sonar-scanner-cli:4.7.0'
+                        }
+                    steps {
                 withSonarQubeEnv('SonarQube') {
                     sh "./gradlew sonarqube"
                 }
