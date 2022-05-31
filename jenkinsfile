@@ -31,15 +31,7 @@ pipeline {
                   image 'sonarsource/sonar-scanner-cli:4.7.0'
                 }
                }
-                   environment {
-            //  scannerHome = tool 'Sonar'
-            scannerHome='/opt/sonar-scanner'
-        }
-                steps{
-                    withSonarQubeEnv('Sonar') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
+                   
             }
        
     }
