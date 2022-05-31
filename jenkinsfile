@@ -11,6 +11,7 @@ pipeline {
       
           environment {
 		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+        }
     
     stages {
 
@@ -22,20 +23,9 @@ pipeline {
                   cd S2-E-CommerceWebsite
                   ''' 
             }
-        } 
-        
-        stage('SonarQube analysis') {
-                agent {
-                docker {
-                 
-                  image 'sonarsource/sonar-scanner-cli:4.7.0'
-                }
-               }
-                   
-            }
+        }      
        
     }
-
 
 
 post {
@@ -57,7 +47,4 @@ post {
       deleteDir()
     }
   }
-
-
-}
 }
