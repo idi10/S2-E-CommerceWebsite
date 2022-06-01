@@ -101,10 +101,8 @@ cat docker-compose.yml
 docker-compose up -d
 sleep 10
 docker ps
-port= 1121
-IP addr= $(curl ifconfig.co)
-
-echo "The e-commerce application is available at $IP addr:$port
+IP=$(curl ifconfig.co)
+echo "The application is available at $IP:1121"
 '''
             }
         }
