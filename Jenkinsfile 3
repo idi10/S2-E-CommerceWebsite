@@ -1,0 +1,200 @@
+pipeline {
+  agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+        timeout (time: 60, unit: 'MINUTES')
+        timestamps()
+      }
+      
+      
+          environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
+     
+     
+        stages {
+    
+        stage('Setup parameters') {
+                steps {
+                    script { 
+                        properties([
+                            parameters([
+    
+                                string(
+                                    defaultValue: 'dev', 
+                                    name: 'branch', 
+                                    trim: true
+                                ),
+
+
+				                 string(
+                                defaultValue: 'develop',
+                                name: 'Please_leave_this_section_as_it_is',
+                                trim: true
+                                ),
+			    
+                            ])
+                        ])
+                    }
+                }
+           } 
+        
+    
+    stage('cloning') {
+            steps {
+                sh '''
+                  rm -rf $WORKSPACE/*
+                  git clone --branch $branch https://github.com/idi10/S2-E-CommerceWebsite.git
+                  cd S2-E-CommerceWebsite
+                  ''' 
+            }
+        } 
+        
+        stage('SonarQube analysis') {
+           agent {
+                docker {
+                 
+                  image 'sonarsource/sonar-scanner-cli:4.7.0'
+                }
+               }
+                   environment {
+            CI = 'true'
+            //  scannerHome = tool 'Sonar'
+            scannerHome='/opt/sonar-scanner'
+        }
+                steps{
+                    withSonarQubeEnv('Sonar') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+
+        stage("Quality gate") {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }     
+
+        stage('Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+        
+        stage('tagging the image') {
+            
+            steps {
+                sh '''
+                Tag=${git rev-parse --short=5 HEAD}
+                docker build -t devopseasylearning2021/idrissa:$Tag-${BUILD-NUMBER} .
+                '''
+            }
+        }
+
+        stage('pushing the image to dev repository') {
+
+            steps {
+                sh '''
+                cd $WORKSPACE/S2-E-CommerceWebsite
+                docker push -t devopseasylearning2021/idrissa:$Tag-${BUILD_NUMBER}
+                   '''
+            }
+        }
+
+        stage('deploying the application with K8S') {
+
+            steps {
+
+               sh '''
+               rm -rf app-test.yml || true
+               cat <<EOF > app-test.yml   
+               apiVersion: apps/v1
+               kind: Deployment
+               metadata:
+                  name: app-test
+                  labels:
+                  application: e-commerce
+               spec:
+                 selector:
+                   matchLabels:
+                     octopusexport: OctopusExport
+                   revisionHistoryLimit: 5
+                   replicas: 5
+                   progressDeadlineSeconds: 60
+                   strategy:
+                     type: RollingUpdate
+                   template:
+                     metadata:
+                       labels:
+                          application: e-commerce
+                          octopusexport: OctopusExport
+                          spec:
+                          terminationGracePeriodSeconds: 30
+                   volumes:
+                     - name: volume1
+                         persistentVolumeClaim:
+                             claimName: main-volume
+                   containers:
+                      - name: e-commerce
+                         image: 'devopseasylearning2021/idrissa:$Tag'
+                   ports:
+                     - name: alternative port
+                      containerPort: 90
+                      protocol: TCP
+                     - name: Init port
+                      containerPort: 80
+                      protocol: TCP
+                   volumeMounts:
+                     - name: e-commerce
+                     mountPath: /app/e-commerce
+                     subPath: ''
+                affinity:
+                  podAntiAffinity:
+                     preferredDuringSchedulingIgnoredDuringExecution:
+                         - weight: 100
+                     podAffinityTerm:
+                         labelSelector:
+                            matchExpressions:
+                                - key: app
+                                 operator: In
+                                 values:
+                                  - web
+                             topologyKey: kubernetes.io/hostname
+
+    EOF
+
+             cat app-test.yml
+             kubectl apply app-test.yml
+             kubectl get po
+             curl ifconfig.co
+             '''
+            }
+
+
+        }
+
+    }
+
+post {
+   
+   success {
+      slackSend (channel: '#development-alerts', color: 'good', message: "SUCCESSFUL:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+
+ 
+    unstable {
+      slackSend (channel: '#development-alerts', color: 'warning', message: "UNSTABLE:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+
+    failure {
+      slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE:  Branch name  <<${env.BRANCH_NAME}>> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+   
+    cleanup {
+      deleteDir()
+    }
+  }
+ }
+}
