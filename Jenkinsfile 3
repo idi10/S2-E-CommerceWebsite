@@ -12,7 +12,7 @@ pipeline {
 		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
 	}
           environment {
-        Tag = ${git rev-parse --short=5 HEAD}
+        Tag=$(git rev-parse --short=5 HEAD)
     }
         stages {
     
