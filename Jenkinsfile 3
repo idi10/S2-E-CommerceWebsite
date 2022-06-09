@@ -13,9 +13,7 @@ pipeline {
 	}
           environment {
         Tag = ${git rev-parse --short=5 HEAD}
-          }
-     
-     
+    }
         stages {
     
         stage('Setup parameters') {
