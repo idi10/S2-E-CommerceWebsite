@@ -90,7 +90,7 @@ pipeline {
 
             steps {
                 sh '''
-                cd $WORKSPACE/S2-E-CommerceWebsite
+                cd $WORKSPACE/S2-E-CommerceWebsite/
                 docker push -t devopseasylearning2021/idrissa:$TAG-${BUILD_NUMBER}
                    '''
             }
