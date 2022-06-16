@@ -58,8 +58,8 @@ pipeline {
                }
                    environment {
             CI = 'true'
-            //  scannerHome = tool 'Sonar'
-            scannerHome='/opt/sonar-scanner'
+            //  scannerHome = tool 'Sonar' 
+            scannerHome='/opt/sonar-scanner' # where to find the scanner and scan the home
         }
                 steps{
                     withSonarQubeEnv('Sonar') {
@@ -79,8 +79,7 @@ pipeline {
             
             steps {
                 sh '''
-                cd /S2-E-CommerceWebsite
-                TAG= $(git rev-parse --short=5 HEAD)\
+                TAG= $(git rev-parse --short=5 HEAD)
                 docker build -t devopseasylearning2021/idrissa:$TAG-${BUILD-NUMBER} .
                 '''
             }
