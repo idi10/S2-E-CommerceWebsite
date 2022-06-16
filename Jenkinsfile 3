@@ -79,7 +79,7 @@ pipeline {
             
             steps {
                 sh '''
-                cd dev
+                cd /S2-E-CommerceWebsite
                 TAG= $(git rev-parse --short=5 HEAD)\
                 docker build -t devopseasylearning2021/idrissa:$TAG-${BUILD-NUMBER} .
                 '''
@@ -90,7 +90,7 @@ pipeline {
 
             steps {
                 sh '''
-                cd $WORKSPACE/S2-E-CommerceWebsite/
+                cd $WORKSPACE/S2-E-CommerceWebsite
                 docker push -t devopseasylearning2021/idrissa:$TAG-${BUILD_NUMBER}
                    '''
             }
