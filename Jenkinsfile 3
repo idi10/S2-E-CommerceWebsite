@@ -80,8 +80,9 @@ pipeline {
             steps {
                 sh '''
                 TAG= $(git rev-parse --short=5 HEAD)
-                BUILD= $(docker build -t devopseasylearning2021/idrissa:$TAG-${BUILD-NUMBER} .)
-                $BUILD
+                ls -l
+                docker build -t devopseasylearning2021/idrissa:$TAG-${BUILD-NUMBER} .
+                
                 '''
             }
         }
@@ -161,7 +162,7 @@ pipeline {
              cat app-test.yml
              kubectl apply app-test.yml
              kubectl get po
-             curl ifconfig.co
+             kubectle get no -owide
              '''
             }
 
