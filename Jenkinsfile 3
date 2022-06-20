@@ -22,7 +22,7 @@ pipeline {
                         properties([
                             parameters([
     
-                                string(
+                               string(
                                     defaultValue: 'dev', 
                                     name: 'branch',
                                 ),
@@ -81,6 +81,7 @@ pipeline {
             
             steps {
                 sh '''
+                cd $WORKSPACE/S2-E-CommerceWebsite
                 TAG= $(git rev-parse --short=5 HEAD)
                 ls -l
                 docker build -t devopseasylearning2021/idrissa:$TAG-${BUILD-NUMBER} .
