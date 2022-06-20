@@ -12,6 +12,7 @@ pipeline {
       
           environment {
 		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+    TAG= $(git rev-parse --short=5 HEAD)
 	}
 
         stages {
@@ -82,7 +83,6 @@ pipeline {
             steps {
                 sh '''
                 ls -l
-                TAG= $(git rev-parse --short=5 HEAD)
                 docker build -t devopseasylearning2021/idrissa:$TAG .
                 '''
             }
