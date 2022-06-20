@@ -22,7 +22,7 @@ pipeline {
                         properties([
                             parameters([
     
-                           Y     string(
+                                string(
                                     defaultValue: 'dev', 
                                     name: 'branch',
                                 ),
