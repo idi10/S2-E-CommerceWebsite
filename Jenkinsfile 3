@@ -82,7 +82,7 @@ pipeline {
             steps {
                 sh '''
                 ls -l
-                docker build -t devopseasylearning2021/idrissa:$TAG .
+                docker build -t devopseasylearning2021/idrissa:v1.0 .
                 '''
             }
         }
@@ -92,7 +92,8 @@ pipeline {
             steps {
                 sh '''
                 cd $WORKSPACE/S2-E-CommerceWebsite
-                docker push -t devopseasylearning2021/idrissa:$TAG-${BUILD_NUMBER}
+                docker push -t devopseasylearning2021/idrissa:v1.0
+	
                    '''
             }
         }
